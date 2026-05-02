@@ -14,7 +14,7 @@ export default function Home() {
             <span className="uppercase tracking-[4px] text-sm font-medium text-cyan-300">NEON VAULT ACCESS • 2026</span>
           </div>
 
-          <h1 className="text-7xl md:text-8xl font-bold tracking-[-3px] leading-none mb-8 neon-text">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight md:tracking-[-3px] leading-none mb-8 neon-text">
             PDFs <span className="bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400 bg-clip-text text-transparent">PREMIUM</span><br />
             dans un vault cybernétique
           </h1>
@@ -27,7 +27,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link 
               href="/shop"
-              className="btn-cyber px-12 py-6 rounded-3xl font-semibold text-2xl flex items-center justify-center gap-4 shadow-2xl"
+              className="btn-cyber px-6 sm:px-12 py-4 sm:py-6 rounded-3xl font-semibold text-lg sm:text-2xl"
             >
               Accéder à la boutique
               <span className="text-3xl">⚡</span>

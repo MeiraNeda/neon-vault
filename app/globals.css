@@ -8,6 +8,10 @@
   }
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 /* Aurora Background Animé (le cœur du style cyber-neon) */
 .aurora-bg {
   position: relative;
