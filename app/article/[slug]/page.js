@@ -1,4 +1,4 @@
-import { createClientServer } from '../../../lib/supabase/server';
+import { createClientServer } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
