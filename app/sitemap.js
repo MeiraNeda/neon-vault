@@ -1,4 +1,4 @@
-import { createClientServer } from "@/lib/supabase/server";
+import { createClientServer } from "../lib/supabase/server";
 
 export default async function sitemap() {
   const supabase = await createClientServer();
