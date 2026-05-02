@@ -4,14 +4,15 @@ import Navbar from '../components/Navbar';
 export default function Home() {
   return (
     <>
-      {/* Wrapper anti overflow horizontal */}
+      {/* Wrapper global anti overflow */}
       <div className="overflow-x-hidden">
 
         {/* Hero Cyber-Neon Aurora */}
-        <div className="aurora-bg min-h-screen flex items-center relative">
+        <div className="aurora-bg min-h-screen flex items-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(at_center,#00000088_40%,transparent)] z-0"></div>
 
-          <div className="max-w-6xl mx-auto px-6 relative z-10 pt-20 pb-32 text-center">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 pt-20 pb-32 text-center overflow-hidden">
+
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-cyan-400/30 backdrop-blur-xl mb-10">
               <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
               <span className="uppercase tracking-[4px] text-sm font-medium text-cyan-300">
@@ -19,7 +20,7 @@ export default function Home() {
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight md:tracking-[-3px] leading-none mb-8 neon-text">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight md:tracking-[-3px] leading-tight mb-8 neon-text break-words">
               PDFs{' '}
               <span className="bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 PREMIUM
@@ -28,16 +29,16 @@ export default function Home() {
               dans un vault cybernétique
             </h1>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-zinc-300 max-w-3xl mx-auto mb-14">
+            <p className="text-lg sm:text-xl md:text-2xl text-zinc-300 max-w-3xl mx-auto mb-14 px-2">
               Contenu exclusif protégé. Articles libres. PDFs débloqués en un flash via Gumroad.
               <br />
               L’expérience futuriste que tu attends.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
               <Link
                 href="/shop"
-                className="btn-cyber px-6 sm:px-12 py-4 sm:py-6 rounded-3xl font-semibold text-lg sm:text-2xl flex items-center justify-center gap-4 shadow-2xl"
+                className="btn-cyber w-full sm:w-auto px-6 sm:px-12 py-4 sm:py-6 rounded-3xl font-semibold text-lg sm:text-2xl flex items-center justify-center gap-4 shadow-2xl"
               >
                 Accéder à la boutique
                 <span className="text-3xl">⚡</span>
@@ -45,7 +46,7 @@ export default function Home() {
 
               <Link
                 href="/blog"
-                className="glass-neon px-6 sm:px-12 py-4 sm:py-6 rounded-3xl font-semibold text-lg sm:text-2xl border border-white/20 hover:border-purple-400"
+                className="glass-neon w-full sm:w-auto px-6 sm:px-12 py-4 sm:py-6 rounded-3xl font-semibold text-lg sm:text-2xl border border-white/20 hover:border-purple-400"
               >
                 Explorer le réseau (Blog)
               </Link>
