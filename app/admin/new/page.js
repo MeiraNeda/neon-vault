@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSupabase } from '@/components/providers/SupabaseProvider';
+import { useSupabase } from '../../../components/providers/SupabaseProvider';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
