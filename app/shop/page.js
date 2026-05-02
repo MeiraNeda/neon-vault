@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createClientServer } from '@/lib/supabase/server';
+import { createClientServer } from '../../lib/supabase/server';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 

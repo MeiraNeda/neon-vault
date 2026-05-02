@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from ".././../../../lib/supabase/client";
 import { Heart } from 'lucide-react';
 
 export default function CommentsSection({ postId }) {
@@ -50,7 +50,7 @@ export default function CommentsSection({ postId }) {
         .select('id')
         .eq('post_id', postId)
         .eq('user_id', user.id)
-        .single();
+       .maybeSingle();
 
       setHasLikedArticle(!!data);
     }
@@ -130,7 +130,7 @@ export default function CommentsSection({ postId }) {
       .select('id')
       .eq('comment_id', commentId)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle()
 
     if (existing) {
       await supabase.from('comment_likes').delete().eq('id', existing.id);

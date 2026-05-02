@@ -1,10 +1,12 @@
-import { createClientServer } from '@/lib/supabase/server';
+import { createClientServer } from '../../../lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { redirect } from 'next/navigation';
 import { Download, Lock, Zap, Heart } from 'lucide-react';
 import CommentsSection from './components/CommentsSection';
 import ArticleLikeButton from './components/ArticleLikeButton';   // ← Nouveau
+import BuyGumroadButton from './components/BuyGumroadButton';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -23,7 +25,7 @@ export async function generateMetadata({ params: paramsPromise }) {
     .from("posts")
     .select("title, excerpt, image_url")
     .eq("slug", params.slug)
-    .single();
+    .maybeSingle()
 
   if (!post) return { title: "Article introuvable" };
 
@@ -42,24 +44,59 @@ export default async function ArticlePage({ params: paramsPromise }) {
   const params = await paramsPromise;
   const supabase = await createClientServer();
 
+  // 🔐 Vérification authentification
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    redirect('/login?redirect=/article/' + params.slug);
+    redirect(`/login?redirect=/article/${params.slug}`);
   }
 
-  const { data: post } = await supabase
+  // 📄 Récupération de l'article
+  const { data: post, error: postError  } = await supabase
     .from('posts')
     .select('*')
     .eq('slug', params.slug)
     .eq('published', true)
-    .single();
+    .maybeSingle()
 
-  if (!post) {
+  if (postError || !post) {
+    console.error('Article non trouvé:', postError);
     return (
       <div className="aurora-bg min-h-screen py-20 text-center">
         <p className="text-3xl text-zinc-400">Article non trouvé</p>
       </div>
     );
+  }
+
+  // 💳 Vérification achat (SaaS lock)
+  const { data: purchase } = await supabase
+    .from('purchases')
+    .select('*')
+    .eq('user_email', session.user.email)
+    .eq('product_id', post.product_id)
+    .maybeSingle()
+
+  // 🔐 Génération du signed URL pour le PDF (si acheté)
+  let signedUrl = null;
+
+  if (purchase && post.pdf_url) {
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from('pdfs')
+        .createSignedUrl(post.pdf_url, 3600);
+
+      if (error) {
+        console.error('Erreur signed URL:', error);
+      } else {
+        signedUrl = data?.signedUrl || null;
+      }
+    } catch (err) {
+      console.error('Erreur lors de la création du signed URL:', err);
+    }
   }
 
   return (
@@ -68,36 +105,39 @@ export default async function ArticlePage({ params: paramsPromise }) {
       {/* 🌌 FX BACKGROUND */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.15),transparent_45%),radial-gradient(circle_at_bottom,rgba(236,72,153,0.12),transparent_45%)] pointer-events-none" />
       
-      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.04),transparent)] animate-pulse" />
+      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.04),transparent)] animate-pulse pointer-events-none" />
 
       <div className="relative z-10">
+        {/* Progress bar */}
       <div className="fixed top-0 left-0 w-full h-1 bg-black/30 z-50">
         <div id="progress-bar" className="h-full bg-gradient-to-r from-cyan-400 to-pink-500 w-0 transition-all" />
       </div>
       <div className="max-w-4xl mx-auto px-6 py-12">
 
         {/* IMAGE HEADER */}
+        {/* Image de couverture */}
         {post.image_url && (
           <div className="relative aspect-[16/9] rounded-3xl overflow-hidden mb-12 group bg-zinc-900 
           hover:scale-[1.01] transition duration-700">
 
             {/* glow dynamique */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-gradient-to-t from-cyan-500/10 via-transparent to-pink-500/10" />
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-gradient-to-t from-cyan-500/10 via-transparent to-pink-500/10 pointer-events-none" />
 
             <img
               src={getPublicUrl(post.image_url)}
               alt={post.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
             <div className="absolute inset-0 rounded-3xl ring-1 ring-cyan-400/20 pointer-events-none" />
 
-            <div className="absolute top-6 right-6 px-5 py-2 text-xs tracking-wider bg-black/60 backdrop-blur-md border border-cyan-400/30 text-cyan-300 rounded-full">
+            <div className="absolute top-6 right-6 px-5 py-2 text-xs tracking-wider bg-black/60 backdrop-blur-md border border-cyan-400/30 text-cyan-300 rounded-full pointer-events-none">
               CONTENU EXCLUSIF
             </div>
           </div>
         )}
 
+        {/* Badges */}
         <div className="flex gap-3 mb-10">
           <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-300 
           hover:border-cyan-400/40 hover:text-white transition">
@@ -144,7 +184,7 @@ export default async function ArticlePage({ params: paramsPromise }) {
 
         {/* CONTENU DE L'ARTICLE */}
         <div className="relative">
-          <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 via-violet-500/10 to-pink-500/20 blur-3xl opacity-50" />
+          <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 via-violet-500/10 to-pink-500/20 blur-3xl opacity-50 pointer-events-none" />
 
           <div className="relative bg-zinc-950/80 border border-cyan-400/20 rounded-3xl p-10 md:p-16 
             backdrop-blur-2xl shadow-2xl 
@@ -275,59 +315,60 @@ export default async function ArticlePage({ params: paramsPromise }) {
         {/* SECTION COMMENTAIRES */}
         <CommentsSection postId={post.id} />
 
-        {/* PDF CTA */}
-        {post.pdf_url && (
-          <div className="mt-20">
-            <div className="border border-dashed border-cyan-400/30 rounded-3xl p-12 
-              bg-zinc-950/60 backdrop-blur-xl 
-              hover:border-pink-400/40 transition
-              shadow-[0_0_60px_-20px_rgba(34,211,238,0.25)]">
-              <div className="text-center">
-                <div className="mx-auto w-20 h-20 bg-gradient-to-br from-cyan-400 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-cyan-500/40">
-                  <Download className="w-10 h-10 text-black" />
-                </div>
+        {/* 💳 BOUTON ACHAT GUMROAD */}
+        {post.pdf_url && !purchase && (
+          <div className="mt-20 text-center relative z-30">
+            <div className="border border-pink-400/30 rounded-3xl p-10 bg-zinc-950/80 backdrop-blur-xl relative overflow-hidden">
 
-                <h3 className="text-3xl font-bold mb-3 text-white">
-                  Télécharge la version PDF complète
-                </h3>
+              <Lock className="w-11 h-11 mx-auto text-pink-400 mb-5" />
 
-                <p className="text-zinc-400 mb-8">
-                  Version optimisée, imprimable, sans distraction.
-                </p>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Contenu verrouillé
+              </h3>
 
-                <a
-                  href={post.pdf_url}
-                  target="_blank"
-                  className="relative inline-flex items-center gap-4 px-10 py-5 rounded-2xl 
-                  font-semibold text-lg text-black overflow-hidden group
-                  bg-gradient-to-r from-cyan-400 via-cyan-300 to-pink-500
-                  shadow-[0_0_40px_rgba(34,211,238,0.35)]
-                  hover:shadow-[0_0_80px_rgba(236,72,153,0.35)]
-                  hover:scale-[1.04] transition-all duration-300"
-                >
-                  
-                  {/* glow animé arrière-plan */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 
-                  bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.4),transparent_60%)]" />
+              <p className="text-zinc-400 mb-8 max-w-md mx-auto">
+                Débloquer le PDF complet
+              </p>
 
-                  {/* icône gauche */}
-                  <Zap className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+              {/* Bouton Gumroad */}
+              <BuyGumroadButton gumroadLink={post.pdf_url} />
 
-                  {/* texte */}
-                  <span className="relative z-10 tracking-wide">
-                    TÉLÉCHARGER
-                  </span>
-
-                  {/* lock icône droite */}
-                  <Lock className="w-5 h-5 opacity-70 relative z-10 group-hover:opacity-100 transition" />
-
-                  {/* ligne glow animée */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 
-                  bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-                </a>
-              </div>
             </div>
+          </div>
+        )}
+
+        {/* 📄 PDF SI ACHAT OK */}
+        {post.pdf_url && purchase && (
+          <div className="mt-20 text-center">
+
+            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-cyan-400 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+              <Download className="w-10 h-10 text-black" />
+            </div>
+
+            <h3 className="text-3xl font-bold text-white mb-3">
+              PDF débloqué
+            </h3>
+
+            <p className="text-zinc-400 mb-6">
+              Accès sécurisé instantané
+            </p>
+
+            {/* 🔐 Sécurité : signed URL obligatoire */}
+            {signedUrl ? (
+              <a
+                href={signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-10 py-5 bg-gradient-to-r from-cyan-400 to-pink-500 text-black rounded-2xl font-bold hover:scale-105 transition inline-block"
+              >
+                Télécharger PDF ⚡
+              </a>
+            ) : (
+              <div className="text-red-400 font-medium">
+                ⚠️ Impossible de générer le lien sécurisé
+              </div>
+            )}
+
           </div>
         )}
 

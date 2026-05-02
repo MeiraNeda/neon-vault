@@ -1,6 +1,6 @@
 // app/blog/page.js  (Server Component)
 import BlogClient from './BlogClient';
-import { createClientServer } from '@/lib/supabase/server';
+import { createClientServer } from '../../lib/supabase/server';
 
 export default async function BlogPage() {
   const supabase = await createClientServer();

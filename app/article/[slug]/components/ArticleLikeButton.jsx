@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "../../../../lib/supabase/client";
 import { Heart } from 'lucide-react';
 
 export default function ArticleLikeButton({ postId }) {
@@ -30,7 +30,7 @@ export default function ArticleLikeButton({ postId }) {
           .select('id')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle()
 
         setHasLiked(!!data);
       }

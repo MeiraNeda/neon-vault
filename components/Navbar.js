@@ -54,13 +54,13 @@ export default function Navbar() {
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"   // ← z-30 au lieu de z-40
         />
       )}
 
       <nav
         className={`
-          fixed top-0 z-50 w-full transition-all duration-500 ease-out
+          fixed top-0 z-40 w-full transition-all duration-500 ease-out   // ← changé de z-50 à z-40
           ${scrolled ? 'bg-zinc-950/70 backdrop-blur-2xl border-b border-white/10' : 'bg-transparent'}
           ${hidden ? '-translate-y-full' : 'translate-y-0'}
         `}
